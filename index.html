@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Homework 9 - Jinwoo Park</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+    <link href="assets/css/style.css" rel="stylesheet" type="text/css">
+    <style>
+    .name, .rock, .paper, .scissors{cursor:pointer;font-size:1.3em;}
+    .p1_rps, .p2_rps, .p1_selected, .p2_selected {display:none;}
+    </style>
+</head>
+<body>
+    <body>
+        <div class="container">
+            <div class="jumbotron">
+              <h1 class="display-4 text-center shadow p-3 mb-5 bg-white rounded">Rock Paper Scissors</h1>
+              <div class="scr">
+                <div class="input-group mb-3 player_name_scr">
+                    <input type="text" class="form-control player_name" placeholder="Player's username" aria-label="Player's username" aria-describedby="button-addon2">
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary player_name_btn" type="button" id="button-addon2">Button</button>
+                    </div>
+                  </div>
+              </div>
+            </div>
+            
+        </div>
+        <div class="container">
+            <div class="row d-flex justify-content-between align-items-center">
+              <div class="col-sm border border-primary mx-3 shadow p-3 mb-5 bg-white rounded font-weight-bold player1">
+                    <div class="border-bottom border-primary my-1 name">WAITING FOR PLAYER 1</div>
+                    <div><h1 class="p1_selected"></h1></div>
+                    <div class="my-1 p1_rps rock" data-value="ROCK">ROCK</div>
+                    <div class="my-1 p1_rps paper" data-value="PAPER">PAPER</div>
+                    <div class="border-bottom border-primary my-1 p1_rps scissors" data-value="SCISSORS">SCISSORS</div>
+                    <div class="result">WINS: <span class="win">0</span> LOSES: <span class="lose">0</span></div>
+              </div>
+              <div class="col-sm border border-dark mx-3 shadow p-3 mb-5 bg-white rounded font-weight-bold play_result">
+                
+              </div>
+              <div class="col-sm border border-danger mx-3 shadow p-3 mb-5 bg-white rounded font-weight-bold player2">
+                    <div class="border-bottom border-danger my-1 name">WAITING FOR PLAYER 2</div>
+                    <div><h1 class="p2_selected"></h1></div>
+                    <div class="my-1 p2_rps rock" data-value="ROCK">ROCK</div>
+                    <div class="my-1 p2_rps paper" data-value="PAPER">PAPER</div>
+                    <div class="border-bottom border-danger my-1 p2_rps scissors" data-value="SCISSORS">SCISSORS</div>
+                    <div class="result">WINS: <span class="win">0</span> LOSES: <span class="lose">0</span></div>
+              </div>
+            </div>
+          </div>
+    </body>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/js/bootstrap.min.js"></script>
+    <!-- Firebase Reference -->
+    <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
+    <script type="text/javascript" src="assets/js/index.js"></script>
+</body>
+</html>

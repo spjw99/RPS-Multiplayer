@@ -11,9 +11,8 @@ const config = {
 firebase.initializeApp(config);
 
 const database = firebase.database();
-
-let rps = database.ref("/rps");
-let chat = database.ref("/chat");
+const rps = database.ref("/rps");
+const chat = database.ref("/chat");
 
 function update_info(mode, obj){
     if(mode === "left"){
@@ -27,34 +26,95 @@ function update_info(mode, obj){
 function show_rps(mode){
     if(mode === "left"){
         if(mode === you.spot){
+            $('.p2_selected').html(enemy.select);
             $('.p1_rps').show();
+            $('.turn_msg').html("<span class='blue'>" + you.name + ", it is <b>your turn!</b></span>");
+        }else{
+            $('.turn_msg').html("<span class='red'>" + you.name + "! please <b>wait</b> until '" + enemy.name + "' selects one.</span>");
         }
-    }else if("right"){//right
+    }else if(mode === "right"){//right
         if(mode === you.spot){
+            $('.p1_selected').html(enemy.select);
             $('.p2_rps').show();
+            $('.turn_msg').html("<span class='red'>" + you.name + ", it is <b>your turn!</b></span>");
+        }else{
+            $('.turn_msg').html("<span class='blue'>" + you.name + "! please <b>wait</b> until '" + enemy.name + "' selects one.</span>");
         }
-    }else if("all"){
-        $('.p1_rps').show();
-        $('.p2_rps').show();
+    }else if(mode === "all"){
+        $('.turn_msg').html("");
+        if(you.spot === "left"){
+            $('.p2_selected').html(enemy.select);
+        }else{
+            $('.p1_selected').html(enemy.select);
+        }
+        $('.player1 .p1_selected').show();
+        $('.player2 .p2_selected').show();
+        
     }
 }
 function show_winner_loser(mode){
+    // console.log(rps.left);
+    // console.log(rps.child("left").win);
+    let win = 0, lose = 0, winner='';
     if(mode === "same"){
-
+        show_result('', "draw");
     }else if(mode === "left"){
-        console.log(rps.child("left").win);
-        console.log(rps.child("left").win+1);
-        rps.child("left").update({win:rps.child("left").win+1});
-        rps.child("right").update({lose:rps.child("right").lose+1});
-        show_result("<h1>" + rps.child("left").name + "Wins!");
+        if(you.spot === "left"){
+            you.win = you.win + 1;
+            enemy.lose = enemy.lose + 1;
+            win = you.win;
+            lose = enemy.lose;
+            winner = you.name;
+        }else{
+            you.lose = you.lose + 1;
+            enemy.win = enemy.win + 1;
+            win = enemy.win;
+            lose = you.lose;
+            winner = enemy.name;
+        }
+        rps.child("left").update({win : win});
+        rps.child("right").update({lose : lose});
+        show_result(winner, "left");
     }else if(mode === "right"){
-        rps.child("left").update({lose:rps.child("left").lose+1});
-        rps.child("right").update({win:rps.child("right").win+1});
-        show_result("<h1>" + rps.child("right").name + "Wins!");
+        if(you.spot === "left"){
+            you.lose = you.lose + 1;
+            enemy.win = enemy.win + 1;
+            win = enemy.win;
+            lose = you.lose;
+            winner = enemy.name;
+        }else{
+            you.win = you.win + 1;
+            enemy.lose = enemy.lose + 1;
+            win = you.win;
+            lose = enemy.lose;
+            winner = you.name;
+        }
+        
+        rps.child("left").update({lose:lose});
+        rps.child("right").update({win:win});
+        show_result(winner, "right");
     }
 }
-function show_result(msg){
-    $('.play_result').html(msg);
+function show_result(winner, mode){
+    if(mode === "left"){
+        $('.play_result').html("<h1>" + winner + " Won!</h1>");
+        $('.player1 .win').text(parseInt($('.player1 .win').text()) + 1);
+        $('.player2 .lose').text(parseInt($('.player2 .lose').text()) + 1);
+    }else if(mode === "right"){
+        $('.play_result').html("<h1>" + winner + " Won!</h1>");
+        $('.player2 .win').text(parseInt($('.player2 .win').text()) + 1);
+        $('.player1 .lose').text(parseInt($('.player1 .lose').text()) + 1);
+    }else{
+        $('.play_result').html("<h1>Draw!</h1>");
+    }
+    setTimeout(function(){
+        $('.play_result').html("");
+        $('.player1 .p1_selected').empty().hide();
+        $('.player2 .p2_selected').empty().hide();
+
+        rps.child("left").update({select: '', ready_flag:1});
+        rps.child("right").update({select: '', ready_flag:1});
+    }, 3000);
 }
 //check you are player1 or player2
 rps.once("value", function(snapshot) {
@@ -84,19 +144,43 @@ rps.once("value", function(snapshot) {
 rps.on("value", function(snapshot) {// keep watching another player joins or not
     if(you.spot ==="right" && enemy.spot === "left" && snapshot.child("left").exists() && snapshot.val().left.name != ""){
        //update local variable from Firebase DB to get the lastest info
-       console.log(snapshot.val());
+       //console.log(snapshot.val());
        you = snapshot.val().right;// already updated from jquery
        enemy = snapshot.val().left;
+       //update_info("right", you);
        update_info("left", enemy);
-       
     }else if(you.spot ==="left" && enemy.spot === "right" && snapshot.child("right").exists() && snapshot.val().right.name != ""){
         //update local variable from Firebase DB to get the lastest info
-        console.log(snapshot.val());
+        //console.log(snapshot.val());
         you = snapshot.val().left; // already updated from jquery
         enemy = snapshot.val().right;
+        //update_info("left", you);
         update_info("right", enemy);
     }else{
          //one of players left //reset score
+         enemy.win =0;enemy.lose=0;enemy.select='';enemy.ready_flag=0;
+         if(you.spot === "left" && you.ready_flag == "1"){
+             you.win = 0;you.lose=0;you.select='';
+             rps.child('left').update({win : 0, lose: 0, select: ''});
+            $('.player2 .name').html("WAITING FOR PLAYER 2");
+            $('.turn_msg').html("");
+            
+            chat.push({
+				name: "<span class='red'>" + enemy.name + "</span>",
+				msg: " has disconnected",
+				date: firebase.database.ServerValue.TIMESTAMP
+			});
+         }else if(you.spot === "right" && you.ready_flag == "1"){
+            you.win = 0;you.lose=0;you.select='';
+            rps.child('right').update({win : 0, lose: 0, select: ''});
+            $('.player1 .name').html("WAITING FOR PLAYER 1");
+            $('.turn_msg').html("");
+            chat.push({
+				name: "<span class='blue'>" + enemy.name + "</span>",
+				msg: " has disconnected",
+				date: firebase.database.ServerValue.TIMESTAMP
+			});
+         }
         console.log("waiting...");
     }
 
@@ -112,7 +196,12 @@ rps.on("value", function(snapshot) {// keep watching another player joins or not
             //right turn
             show_rps("right");
         }else if(left_select != "" && right_select != ""){
-            //heck who wins
+            //HOLD
+            rps.child("left").update({ready_flag:0});
+            rps.child("right").update({ready_flag:0});
+            //check who wins
+            show_rps("all");
+            
             if(left_select === 'ROCK' && right_select === 'PAPER'){show_winner_loser("right");}
             if(left_select === 'ROCK' && right_select === 'SCISSORS'){show_winner_loser("left");}
             if(left_select === 'PAPER' && right_select === 'SCISSORS'){show_winner_loser("right");}
@@ -120,30 +209,23 @@ rps.on("value", function(snapshot) {// keep watching another player joins or not
             if(left_select === 'SCISSORS' && right_select === 'ROCK'){show_winner_loser("right");}
             if(left_select === 'SCISSORS' && right_select === 'PAPER'){show_winner_loser("left");}
             if(left_select === right_select){show_winner_loser("same");}
-            show_rps("all");
-
-            // if(left_select === 'ROCK' && right_select === 'PAPER'){rps.child("left").update({lose:lose+1});rps.child("right").update({win:win+1});show_result("<h1>" + rps.child("right").name + "Wins!</h1>");}
-            // if(left_select === 'ROCK' && right_select === 'SCISSORS'){rps.child("left").update({win:win+1});rps.child("right").update({lose:lose+1});show_result("<h1>" + rps.child("left").name + "Wins!</h1>");}
-            // if(left_select === 'PAPER' && right_select === 'SCISSORS'){rps.child("left").update({lose:lose+1});rps.child("right").update({win:win+1});show_result("<h1>" + rps.child("right").name + "Wins!</h1>");}
-            // if(left_select === 'PAPER' && right_select === 'ROCK'){rps.child("left").update({win:win+1});rps.child("right").update({lose:lose+1});show_result("<h1>" + rps.child("left").name + "Wins!</h1>");}
-            // if(left_select === 'SCISSORS' && right_select === 'ROCK'){rps.child("left").update({lose:lose+1});rps.child("right").update({win:win+1});show_result("<h1>" + rps.child("right").name + "Wins!</h1>");}
-            // if(left_select === 'SCISSORS' && right_select === 'PAPER'){rps.child("left").update({win:win+1});rps.child("right").update({lose:lose+1});show_result("<h1>" + rps.child("left").name + "Wins!</h1>");}
-            // if(left_select === right_select){show_result("<h1>Draw!</h1>");}
-            
         }else{
-
         }
-
     }
 }, function(errorObject) {    // If any errors are experienced, log them to console.
     console.log("The read failed: " + errorObject.code);
 });
 
-
+//CHAT
+chat.on("child_added", function(snapshot) {
+	$(".chat_scr").append(snapshot.val().name + " : " + snapshot.val().msg + "<br>");
+	var bottom = $(".chat_scr").get(0);
+    bottom.scrollTop = bottom.scrollHeight;
+});
 $(document).ready(function(){
     $('.player_name_btn').on('click', function(){
         input_val = $('.player_name').val();
-        you.name=input_val;
+        you.name = input_val;
         if(you.spot === "left"){
             update_info("left", you);
             $('.player1').addClass('active');
@@ -157,56 +239,33 @@ $(document).ready(function(){
         }else{
 
         }
-        
     })
     $('.p1_rps').on('click', function(){
         const pick = $(this).attr('data-value');
         $('.p1_rps').hide();
-        $('.p1_selected').html("<h1>" + pick + "</h1>").show();
+        $('.p1_selected').html(pick).show();
         rps.child("left").update({select:pick});
     });
     $('.p2_rps').on('click', function(){
         const pick = $(this).attr('data-value');
         $('.p2_rps').hide();
-        $('.p2_selected').html("<h1>" + pick + "</h1>").show();
+        $('.p2_selected').html(pick).show();
         rps.child("right").update({select:pick});
     });
+
+    //CHAT
+    $('.chat_submit_btn').on('click', function(e){
+        e.preventDefault();
+        const chat_input = $.trim($('.chat_input').val());
+        let name = you.name;
+        if(name === ""){name ="guest";}
+        if(you.spot === "left"){
+            name = "<span class='blue'>" + name + "</span>";
+        }else{
+            name = "<span class='red'>" + name + "</span>";
+        }
+        chat.push({name: name, msg: chat_input, date: firebase.database.ServerValue.TIMESTAMP});
+
+        $('.chat_input').val("");
+    })
 })
-//   // --------------------------------------------------------------
-  
-//   // Whenever a user clicks the submit-bid
-  
-//   $("#submit-bid").on("click", function(event) {
-//     event.preventDefault();
-//     // Get the input values
-//     var bidderName = $("#bidder-name").val().trim();
-//     var bidderPrice = parseInt($("#bidder-price").val().trim());
-  
-//     // Log the Bidder and Price (Even if not the highest)
-//     console.log(bidderName);
-//     console.log(bidderPrice);
-  
-//     if (bidderPrice > highPrice) {
-  
-//       // Alert
-//       alert("You are now the highest bidder.");
-  
-//       // Save the new price in Firebase. This will cause our "value" callback above to fire and update
-//       // the UI.
-//       database.ref().set({
-//         highBidder: bidderName,
-//         highPrice: bidderPrice
-//       });
-  
-//       // Log the new High Price
-//       console.log("New High Price!");
-//       console.log(bidderName);
-//       console.log(bidderPrice);
-//     }
-  
-//     else {
-  
-//       // Alert
-//       alert("Sorry that bid is too low. Try again.");
-//     }
-//   });

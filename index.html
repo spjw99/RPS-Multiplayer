@@ -11,6 +11,9 @@
     <style>
     .name, .rock, .paper, .scissors{cursor:pointer;font-size:1.3em;}
     .p1_rps, .p2_rps, .p1_selected, .p2_selected {display:none;}
+    .blue{color: blue; font-size:20px;}
+    .red{color: red; font-size:20px;}
+    .chat_scr{height:200px;overflow-y: scroll}
     </style>
 </head>
 <body>
@@ -19,12 +22,13 @@
             <div class="jumbotron">
               <h1 class="display-4 text-center shadow p-3 mb-5 bg-white rounded">Rock Paper Scissors</h1>
               <div class="scr">
-                <div class="input-group mb-3 player_name_scr">
-                    <input type="text" class="form-control player_name" placeholder="Player's username" aria-label="Player's username" aria-describedby="button-addon2">
-                    <div class="input-group-append">
-                      <button class="btn btn-outline-secondary player_name_btn" type="button" id="button-addon2">Button</button>
+                    <div class="input-group mb-3 player_name_scr">
+                        <input type="text" class="form-control player_name" placeholder="Player's username" aria-label="Player's username" aria-describedby="button-addon2">
+                        <div class="input-group-append">
+                        <button class="btn btn-outline-secondary player_name_btn" type="button" id="button-addon2">Button</button>
+                        </div>
                     </div>
-                  </div>
+                    <div class="turn_msg"></div>
               </div>
             </div>
             
@@ -51,7 +55,16 @@
                     <div class="result">WINS: <span class="win">0</span> LOSES: <span class="lose">0</span></div>
               </div>
             </div>
-          </div>
+        </div>
+        <div class="container">
+            <div class="chat_scr border border-dark"></div>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control chat_input" placeholder="" aria-label="" aria-describedby="button-addon2">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary chat_submit_btn" type="button" id="button-addon2">Submit</button>
+                </div>
+            </div>
+        </div>
     </body>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/js/bootstrap.min.js"></script>
